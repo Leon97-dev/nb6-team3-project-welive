@@ -1,0 +1,5 @@
+building,unitNumber,name,contact,isHouseholder
+101,1001,홍길동,01012341234,HOUSEHOLDER
+101,1002,김철수,01023452345,MEMBER
+102,1201,이영희,01034563456,세대주
+103,304,박민수,01045674567,세대원
