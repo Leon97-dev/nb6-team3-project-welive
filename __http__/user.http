@@ -1,0 +1,23 @@
+### 환경 설정
+@base = http://localhost:3000
+@accessToken =
+
+### 내 프로필 업데이트 (비밀번호 포함)
+PATCH {{base}}/api/users/me
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "currentPassword": "기존비밀번호",
+  "newPassword": "새비밀번호1234!"
+}
+
+### 비밀번호 변경
+PATCH {{base}}/api/users/password
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "currentPassword": "기존비밀번호",
+  "newPassword": "새비밀번호1234!"
+}

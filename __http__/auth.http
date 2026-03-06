@@ -1,0 +1,149 @@
+### 환경 설정
+@base=http://localhost:3000
+@superAdminId=
+@adminId=cmmefviha0000qycti1gfnzak
+@residentId=
+
+### 1) 일반 유저 가입
+POST {{base}}/api/auth/signup
+Content-Type: application/json
+
+{
+  "username": "user_test_001",
+  "password": "user1234!",
+  "contact": "01012345678",
+  "name": "일반유저",
+  "email": "user_test_001@example.com",
+  "apartmentName": "위리브 1단지",
+  "apartmentDong": "101",
+  "apartmentHo": "1001",
+  "role": "USER"
+}
+
+### 2) 관리자 가입
+POST {{base}}/api/auth/signup/admin
+Content-Type: application/json
+
+{
+  "username": "admin_test_012",
+  "password": "admin1234!",
+  "passwordConfirm": "admin1234!",
+  "contact": "01023456781",
+  "name": "관리자123",
+  "email": "admin_test_011@example.com",
+  "apartmentName": "위리브 1단지",
+  "apartmentAddress": "서울시 강남구 테헤란로 1",
+  "apartmentManagementNumber": "0212345678",
+  "description": "테스트용 아파트 설명",
+  "startComplexNumber": "1",
+  "endComplexNumber": "3",
+  "startDongNumber": "101",
+  "endDongNumber": "120",
+  "startFloorNumber": "1",
+  "endFloorNumber": "30",
+  "startHoNumber": "1",
+  "endHoNumber": "8",
+  "role": "ADMIN"
+}
+
+### 3) 로그인 (응답 Set-Cookie 사용)
+POST {{base}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin_test_012",
+  "password": "admin1234!"
+}
+
+### 4) 토큰 재발급 (login 이후 쿠키 필요)
+POST {{base}}/api/auth/refresh
+
+### 5) 로그아웃 (login 이후 쿠키 필요)
+POST {{base}}/api/auth/logout
+
+### 6) 슈퍼 관리자 가입 (테스트 헤더 인증 사용)
+POST {{base}}/api/auth/signup/super-admin
+Content-Type: application/json
+x-user-id: super-user-1
+x-user-role: SUPER_ADMIN
+
+{
+  "username": "super_test_001",
+  "password": "super1234!",
+  "contact": "01034567890",
+  "name": "슈퍼관리자",
+  "email": "super_test_001@example.com",
+  "role": "SUPER_ADMIN",
+  "joinStatus": "APPROVED"
+}
+
+### 7) 관리자 정보 수정 (슈퍼 관리자 권한)
+PATCH {{base}}/api/auth/admins/{{adminId}}
+Content-Type: application/json
+x-user-id: super-user-1
+x-user-role: SUPER_ADMIN
+
+{
+  "name": "수정된관리자",
+  "contact": "01099998888",
+  "email": "admin_updated@example.com",
+  "description": "수정된 아파트 설명",
+  "apartmentName": "위리브 2단지",
+  "apartmentAddress": "서울시 강남구 테헤란로 2",
+  "apartmentManagementNumber": "0299998888"
+}
+
+### 8) 관리자 가입 승인 상태 변경 (슈퍼 관리자 권한)
+PATCH {{base}}/api/auth/admins/{{adminId}}/status
+Content-Type: application/json
+x-user-id: {{superAdminId}}
+x-user-role: SUPER_ADMIN
+
+{
+  "status": "APPROVED"
+}
+
+### 9) 관리자 승인 상태 일괄 변경 (슈퍼 관리자 권한)
+PATCH {{base}}/api/auth/admins/status
+Content-Type: application/json
+x-user-id: super-user-1
+x-user-role: SUPER_ADMIN
+
+{
+  "status": "REJECTED"
+}
+
+### 10) 입주민 승인 상태 변경 (관리자 권한)
+PATCH {{base}}/api/auth/residents/{{residentId}}/status
+Content-Type: application/json
+x-user-id: admin-user-1
+x-user-role: ADMIN
+
+{
+  "status": "APPROVED"
+}
+
+### 11) 입주민 승인 상태 일괄 변경 (관리자 권한)
+PATCH {{base}}/api/auth/residents/status
+Content-Type: application/json
+x-user-id: admin-user-1
+x-user-role: ADMIN
+
+{
+  "status": "REJECTED"
+}
+
+### 12) 거절 계정 정리 (슈퍼 관리자 권한)
+POST {{base}}/api/auth/cleanup
+x-user-id: super-user-1
+x-user-role: SUPER_ADMIN
+
+### 13) 거절 계정 정리 (관리자 권한)
+POST {{base}}/api/auth/cleanup
+x-user-id: admin-user-1
+x-user-role: ADMIN
+
+### 14) 관리자 삭제 (슈퍼 관리자 권한)
+DELETE {{base}}/api/auth/admins/{{adminId}}
+x-user-id: super-user-1
+x-user-role: SUPER_ADMIN

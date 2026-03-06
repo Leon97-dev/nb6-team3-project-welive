@@ -1,0 +1,446 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================
+// enum 정의
+// ==========================
+// 사용자 역할
+enum Role {
+  SUPER_ADMIN // 최고 관리자
+  ADMIN // 아파트 관리자
+  USER // 일반 사용자 (세대주 및 세대원)
+}
+
+// 회원가입 승인 상태
+enum ApprovalStatus {
+  PENDING // 승인 대기
+  APPROVED // 승인됨
+  REJECTED // 거부됨
+}
+
+// 아파트 승인 상태
+enum ApartmentStatus {
+  PENDING // 승인 대기
+  APPROVED // 승인됨
+  REJECTED // 거부됨
+}
+
+// 세대주 여부
+enum HouseholderType {
+  HOUSEHOLDER // 세대주
+  MEMBER // 세대원
+}
+
+// 세대원 거주 상태
+enum ResidentOccupancyStatus {
+  RESIDENCE // 거주 중
+  NO_RESIDENCE // 이사 나감
+}
+
+// 민원 상태
+enum ComplaintStatus {
+  PENDING // 처리 대기
+  IN_PROGRESS // 처리 중
+  RESOLVED // 처리 완료
+  REJECTED // 반려
+}
+
+// 투표 상태
+enum PollStatus {
+  PENDING // 투표 대기
+  IN_PROGRESS // 투표 중
+  CLOSED // 투표 종료
+}
+
+// 투표 대상 유형
+enum PollTargetType {
+  ALL // 전체 세대
+  BUILDING // 특정 동
+}
+
+// 게시판 유형
+enum BoardType {
+  NOTICE // 공지사항
+  POLL // 투표
+  COMPLAINT // 민원
+}
+
+// 공지사항 중요도
+enum NoticeImportance {
+  NORMAL // 일반
+  IMPORTANT // 중요
+}
+
+// 공지사항 카테고리
+enum NoticeCategory {
+  MAINTENANCE // 시설물 관리
+  EMERGENCY // 긴급 상황
+  COMMUNITY // 커뮤니티
+  RESIDENT_VOTE // 주민 투표
+  RESIDENT_COUNCIL // 주민 회의
+  ETC // 기타
+}
+
+// 알림 유형
+enum NotificationType {
+  ADMIN_SIGNUP_REQUESTED // 관리자 가입 요청
+  ADMIN_SIGNUP_APPROVED // 관리자 가입 승인
+  ADMIN_SIGNUP_REJECTED // 관리자 가입 거부
+  RESIDENT_SIGNUP_REQUESTED // 주민 가입 요청
+  RESIDENT_SIGNUP_APPROVED // 주민 가입 승인
+  RESIDENT_SIGNUP_REJECTED // 주민 가입 거부
+  COMPLAINT_CREATED // 민원 생성
+  COMPLAINT_STATUS_CHANGED // 민원 상태 변경
+  NOTICE_CREATED // 공지사항 생성
+}
+
+// ==========================
+// 모델 정의
+// ==========================
+// 사용자
+model User {
+  id              String           @id @default(cuid())
+  username        String           @unique
+  passwordHash    String
+  name            String
+  email           String           @unique
+  contact         String
+  role            Role
+  approvalStatus  ApprovalStatus   @default(PENDING)
+  isRegistered    Boolean          @default(false)
+  isHouseholder   HouseholderType?
+  building        String? // 세대가 속한 동 (세대주 및 세대원만 해당)
+  unitNumber      String? // 세대가 속한 호 (세대주 및 세대원만 해당)
+  profileImageUrl String?
+
+  apartmentId String?
+  apartment   Apartment? @relation("ApartmentResidents", fields: [apartmentId], references: [id], onDelete: SetNull)
+
+  approvedById   String?
+  approvedBy     User?     @relation("UserApproval", fields: [approvedById], references: [id], onDelete: SetNull)
+  approvedUsers  User[]    @relation("UserApproval")
+  approvedAt     DateTime?
+  rejectedReason String?
+
+  adminApartment Apartment?      @relation("ApartmentAdmin")
+  residentRoster ResidentRoster?
+
+  authSessions  AuthSession[]
+  notifications Notification[]
+
+  createdNotices    Notice[]            @relation("NoticeAuthor")
+  createdComplaints Complaint[]         @relation("ComplaintAuthor")
+  createdPolls      Poll[]              @relation("PollAuthor")
+  pollVotes         PollVote[]
+  comments          Comment[]
+  schedules         ApartmentSchedule[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([role, approvalStatus])
+  @@index([apartmentId, building, unitNumber])
+}
+
+// 아파트 단지
+model Apartment {
+  id           String @id @default(cuid())
+  name         String
+  address      String
+  officeNumber String
+  description  String
+
+  // 단지/동/층/호 범위 (회원가입 및 필터 옵션 생성에 사용)
+  startComplexNumber Int
+  endComplexNumber   Int
+  startDongNumber    Int
+  endDongNumber      Int
+  startFloorNumber   Int
+  endFloorNumber     Int
+  startHoNumber      Int
+  endHoNumber        Int
+
+  apartmentStatus ApartmentStatus @default(PENDING)
+
+  adminId String? @unique
+  admin   User?   @relation("ApartmentAdmin", fields: [adminId], references: [id], onDelete: SetNull)
+
+  residents       User[]              @relation("ApartmentResidents")
+  residentRosters ResidentRoster[]
+  boards          Board[]
+  notices         Notice[]
+  complaints      Complaint[]
+  polls           Poll[]
+  schedules       ApartmentSchedule[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@unique([name, address])
+  @@index([apartmentStatus])
+}
+
+// 세대원 명부
+model ResidentRoster {
+  id          String    @id @default(cuid())
+  apartmentId String
+  apartment   Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+
+  name            String
+  contact         String
+  building        String
+  unitNumber      String
+  isHouseholder   HouseholderType
+  residenceStatus ResidentOccupancyStatus @default(RESIDENCE)
+
+  userId String? @unique
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@unique([apartmentId, building, unitNumber, name, contact])
+  @@index([apartmentId, building, unitNumber])
+  @@index([residenceStatus])
+}
+
+// 게시판 (공지사항, 투표, 민원)
+model Board {
+  id          String    @id @default(cuid())
+  apartmentId String
+  apartment   Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+
+  type     BoardType
+  name     String
+  isActive Boolean   @default(true)
+
+  complaints Complaint[]
+  polls      Poll[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([apartmentId, type])
+}
+
+// 공지사항
+model Notice {
+  id          String    @id @default(cuid())
+  apartmentId String
+  apartment   Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+
+  authorId String
+  author   User   @relation("NoticeAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+
+  title      String
+  content    String
+  category   NoticeCategory
+  importance NoticeImportance @default(NORMAL)
+  isPinned   Boolean          @default(false)
+
+  viewsCount    Int @default(0)
+  commentsCount Int @default(0)
+
+  pollId String? @unique
+  poll   Poll?   @relation(fields: [pollId], references: [id], onDelete: SetNull)
+
+  schedule ApartmentSchedule?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([apartmentId, category, createdAt])
+}
+
+// 민원
+model Complaint {
+  id          String    @id @default(cuid())
+  apartmentId String
+  apartment   Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+
+  boardId String?
+  board   Board?  @relation(fields: [boardId], references: [id], onDelete: SetNull)
+
+  authorId String
+  author   User   @relation("ComplaintAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+
+  title    String
+  content  String
+  isPublic Boolean         @default(true)
+  status   ComplaintStatus @default(PENDING)
+
+  building   String?
+  unitNumber String?
+
+  viewsCount    Int @default(0)
+  commentsCount Int @default(0)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([apartmentId, status, createdAt])
+  @@index([apartmentId, building, unitNumber])
+}
+
+// 투표
+model Poll {
+  id          String    @id @default(cuid())
+  apartmentId String
+  apartment   Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+
+  boardId String
+  board   Board  @relation(fields: [boardId], references: [id], onDelete: Restrict)
+
+  authorId String
+  author   User   @relation("PollAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+
+  title   String
+  content String
+  status  PollStatus @default(PENDING)
+
+  targetType         PollTargetType @default(ALL)
+  buildingPermission Int            @default(0)
+
+  startDate DateTime
+  endDate   DateTime
+
+  options PollOption[]
+  votes   PollVote[]
+  notice  Notice?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([apartmentId, status, createdAt])
+  @@index([apartmentId, targetType, buildingPermission])
+}
+
+// 투표 옵션
+model PollOption {
+  id     String @id @default(cuid())
+  pollId String
+  poll   Poll   @relation(fields: [pollId], references: [id], onDelete: Cascade)
+
+  title     String
+  sortOrder Int    @default(0)
+  voteCount Int    @default(0)
+
+  votes PollVote[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([pollId])
+}
+
+// 투표 참여 기록
+model PollVote {
+  id     String @id @default(cuid())
+  pollId String
+  poll   Poll   @relation(fields: [pollId], references: [id], onDelete: Cascade)
+
+  optionId String
+  option   PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([pollId, userId])
+  @@index([optionId])
+}
+
+// 댓글
+model Comment {
+  id          String  @id @default(cuid())
+  apartmentId String?
+
+  boardType BoardType
+  boardId   String
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  content String
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([boardType, boardId])
+  @@index([authorId, createdAt])
+}
+
+// 일정 (아파트 공용 일정 관리)
+model ApartmentSchedule {
+  id          String    @id @default(cuid())
+  apartmentId String
+  apartment   Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+
+  noticeId String? @unique
+  notice   Notice? @relation(fields: [noticeId], references: [id], onDelete: SetNull)
+
+  title       String
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+
+  createdById String
+  createdBy   User   @relation(fields: [createdById], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([apartmentId, startDate, endDate])
+}
+
+// 알림
+model Notification {
+  id         String @id @default(cuid())
+  receiverId String
+  receiver   User   @relation(fields: [receiverId], references: [id], onDelete: Cascade)
+
+  type    NotificationType
+  title   String
+  message String
+
+  relatedBoardType BoardType?
+  relatedBoardId   String?
+
+  isRead Boolean   @default(false)
+  readAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([receiverId, isRead, createdAt])
+}
+
+// 인증 세션 (JWT 리프레시 토큰 관리)
+model AuthSession {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  refreshTokenHash String
+  userAgent        String? // 클라이언트 정보 (선택적)
+  ipAddress        String? // 클라이언트 IP (선택적)
+  expiresAt        DateTime // 세션 만료 시간
+  revokedAt        DateTime? // 세션이 취소된 시간 (취소되지 않은 경우 null)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, expiresAt])
+}
