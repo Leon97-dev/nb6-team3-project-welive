@@ -40,6 +40,8 @@ export const optionalAuth = (
     req.user = {
       id: userId || '',
       role: role ?? 'USER',
+      apartmentId: null,
+      building: null,
     };
 
     if (!userId) {
@@ -50,7 +52,7 @@ export const optionalAuth = (
   next();
 };
 
-// 2) 인증 필수 미들웨어 (인증된 사용자만 접근 허용, 인증되지 않은 경우 401 Unauthorized 에러 반환)
+// 2) 인증 필수 미들웨어
 export const requireAuth = (
   req: Request,
   _res: Response,
@@ -64,7 +66,7 @@ export const requireAuth = (
   next();
 };
 
-// 3) 역할 기반 접근 제어 미들웨어 (특정 역할이 필요한 경우, 인증된 사용자의 역할이 허용된 역할 목록에 포함되어 있는지 확인)
+// 3) 역할 기반 접근 제어 미들웨어
 export const requireRoles =
   (...roles: Role[]) =>
   (req: Request, _res: Response, next: NextFunction): void => {
