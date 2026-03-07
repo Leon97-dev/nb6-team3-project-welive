@@ -6,7 +6,7 @@ import { authController } from './auth.controller';
 const router = Router();
 
 // ==============================================
-// ⭐️ 인증 관련 Routes
+// ⭐️ 인증 관련 Route
 // ==============================================
 // 1) 회원가입 및 로그인
 router.post('/signup', asyncHandler(authController.signupUser));

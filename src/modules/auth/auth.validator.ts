@@ -9,13 +9,28 @@ import type {
   UpdateApprovalStatusDto,
 } from './auth.dto';
 
+// ==============================================
+// ⭐️ 인증 관련 Utility
+// ==============================================
+// 1) 공통 검증 함수
+const parseOrThrow = <T>(schema: z.ZodType<T>, input: unknown): T => {
+  const parsed = schema.safeParse(input);
+  if (!parsed.success) {
+    const issue = parsed.error.issues[0];
+    throw new ValidationError(
+      issue?.message || '요청 데이터가 올바르지 않습니다'
+    );
+  }
+  return parsed.data;
+};
+
+// 2) 전화번호 정규식
 const phoneRegex = /^01[0-9]{8,9}$/;
+
+// 3) 숫자 필드 검증
 const numberField = z.coerce.number().int().positive();
 
-// ==============================================
-// ⭐️ 인증 관련 Validator
-// ==============================================
-// 1) 일반 회원가입
+// 4) 일반 회원가입 스키마
 const SignupUserSchema = z.object({
   username: z.string().trim().min(1, '아이디는 필수입니다'),
   password: z.string().min(8, '비밀번호는 최소 8자 이상이어야 합니다'),
@@ -31,7 +46,7 @@ const SignupUserSchema = z.object({
   role: z.literal('USER'),
 });
 
-// 2) 관리자 회원가입
+// 5) 관리자 회원가입 스키마
 const SignupAdminSchema = z
   .object({
     username: z.string().trim().min(1, '아이디는 필수입니다'),
@@ -72,7 +87,7 @@ const SignupAdminSchema = z
     }
   );
 
-// 3) 슈퍼 관리자 회원가입
+// 6) 슈퍼 관리자 회원가입 스키마
 const SignupSuperAdminSchema = z.object({
   username: z.string().trim().min(1, '아이디는 필수입니다'),
   password: z.string().min(8, '비밀번호는 최소 8자 이상이어야 합니다'),
@@ -86,13 +101,13 @@ const SignupSuperAdminSchema = z.object({
   joinStatus: z.literal('APPROVED'),
 });
 
-// 4) 로그인 요청
+// 7) 로그인 요청 스키마
 const LoginSchema = z.object({
   username: z.string().trim().min(1, '아이디는 필수입니다'),
   password: z.string().min(8, '비밀번호는 최소 8자 이상이어야 합니다'),
 });
 
-// 5) 관리자 정보 수정
+// 8) 관리자 정보 수정 스키마
 const UpdateAdminSchema = z.object({
   name: z.string().trim().min(1, '이름은 필수입니다'),
   contact: z
@@ -109,7 +124,7 @@ const UpdateAdminSchema = z.object({
     .min(1, '관리소 번호는 필수입니다'),
 });
 
-// 6) 승인 상태 업데이트
+// 9) 승인 상태 업데이트 스키마
 const UpdateApprovalStatusSchema = z.object({
   status: z.union([
     z.literal('APPROVED'),
@@ -118,39 +133,37 @@ const UpdateApprovalStatusSchema = z.object({
   ]),
 });
 
-const parseOrThrow = <T>(schema: z.ZodType<T>, input: unknown): T => {
-  const parsed = schema.safeParse(input);
-  if (!parsed.success) {
-    const issue = parsed.error.issues[0];
-    throw new ValidationError(
-      issue?.message || '요청 데이터가 올바르지 않습니다'
-    );
-  }
-  return parsed.data;
-};
-
+// ==============================================
+// ⭐️ 인증 관련 Validator
+// ==============================================
+// 1) 사용자 회원가입
 export const validateSignupUser = (input: unknown): SignupUserDto => {
   return parseOrThrow(SignupUserSchema, input);
 };
 
+// 2) 관리자 회원가입
 export const validateSignupAdmin = (input: unknown): SignupAdminDto => {
   return parseOrThrow(SignupAdminSchema, input);
 };
 
+// 3) 슈퍼 관리자 회원가입
 export const validateSignupSuperAdmin = (
   input: unknown
 ): SignupSuperAdminDto => {
   return parseOrThrow(SignupSuperAdminSchema, input);
 };
 
+// 4) 로그인 요청
 export const validateLogin = (input: unknown): LoginDto => {
   return parseOrThrow(LoginSchema, input);
 };
 
+// 5) 관리자 정보 수정
 export const validateUpdateAdmin = (input: unknown): UpdateAdminDto => {
   return parseOrThrow(UpdateAdminSchema, input);
 };
 
+// 6) 승인 상태 업데이트
 export const validateUpdateApprovalStatus = (
   input: unknown
 ): UpdateApprovalStatusDto => {
