@@ -1,8 +1,8 @@
 ### 환경 설정
 @base=http://localhost:3000
-@superAdminId=
-@adminId=cmmefviha0000qycti1gfnzak
-@residentId=
+@superAdminId=d67676fe-cf95-4b3d-b21e-1765c0ea58fa
+@adminId=380a78f3-c2b4-4c6a-b48d-8190eb44b06c
+@residentId=20c73e48-2192-4499-8eec-ea77e1d7a910
 
 ### 1) 일반 유저 가입
 POST {{base}}/api/auth/signup
@@ -14,7 +14,7 @@ Content-Type: application/json
   "contact": "01012345678",
   "name": "일반유저",
   "email": "user_test_001@example.com",
-  "apartmentName": "위리브 1단지",
+  "apartmentName": "위리브 2단지",
   "apartmentDong": "101",
   "apartmentHo": "1001",
   "role": "USER"
@@ -25,15 +25,15 @@ POST {{base}}/api/auth/signup/admin
 Content-Type: application/json
 
 {
-  "username": "admin_test_012",
+  "username": "admin_test_013",
   "password": "admin1234!",
   "passwordConfirm": "admin1234!",
-  "contact": "01023456781",
-  "name": "관리자123",
-  "email": "admin_test_011@example.com",
-  "apartmentName": "위리브 1단지",
+  "contact": "01023456782",
+  "name": "관리자1234",
+  "email": "admin_test_013@example.com",
+  "apartmentName": "위리브 2단지",
   "apartmentAddress": "서울시 강남구 테헤란로 1",
-  "apartmentManagementNumber": "0212345678",
+  "apartmentManagementNumber": "02145678",
   "description": "테스트용 아파트 설명",
   "startComplexNumber": "1",
   "endComplexNumber": "3",
@@ -51,8 +51,8 @@ POST {{base}}/api/auth/login
 Content-Type: application/json
 
 {
-  "username": "admin_test_012",
-  "password": "admin1234!"
+  "username": "user_test_001",
+  "password": "user1234!"
 }
 
 ### 4) 토큰 재발급 (login 이후 쿠키 필요)

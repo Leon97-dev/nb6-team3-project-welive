@@ -253,7 +253,7 @@ export const authService = {
         username: user.username,
         contact: user.contact,
         avatar: user.profileImageUrl ?? null,
-        residentDong: user.building ?? null,
+        residentDong: user.building ? `${user.building}동` : null,
         apartmentName: user.apartment?.name ?? null,
         isActive: user.isActive,
         joinStatus: user.approvalStatus,
