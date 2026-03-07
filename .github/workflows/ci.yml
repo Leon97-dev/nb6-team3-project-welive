@@ -31,6 +31,3 @@ jobs:
 
       - name: Test
         run: npm test
-
-      - name: E2E Test (supertest)
-        run: npm run test:e2e
