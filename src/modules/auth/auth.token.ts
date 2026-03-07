@@ -97,6 +97,9 @@ export const comparePassword = (
 // ==============================================
 // ⭐️ 쿠키 옵션 정의 (보안 및 유연성 고려)
 // ==============================================
+export const ACCESS_TOKEN_COOKIE = 'accessToken';
+export const REFRESH_TOKEN_COOKIE = 'refreshToken';
+
 // 1) 운영 환경 여부에 따른 Secure 옵션 설정
 const secure = ENV.NODE_ENV === 'production';
 
