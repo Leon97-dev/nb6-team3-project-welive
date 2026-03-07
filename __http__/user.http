@@ -1,6 +1,7 @@
 ### 환경 설정
 @base = http://localhost:3000
-@accessToken =
+@accessToken =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyMGM3M2U0OC0yMTkyLTQ0OTktOGVlYy1lYTc3ZTFkN2E5MTAiLCJyb2xlIjoiVVNFUiIsImFwYXJ0bWVudElkIjoiYjk5ZDI5OTAtZDk0MS00N2Q1LWE0OGItODI1MzExNjY5ZDM4IiwiYnVpbGRpbmciOiIxMDEiLCJpYXQiOjE3NzI4OTM2NjMsImV4cCI6MTc3Mjg5NzI2M30.m2MP1djnsO6XzIMxR_WZ1DQfB9AK7-pFJA0EYKQzCc0
+@imagePath = /Users/leon/team3-project-welive/sample/avatar.png
 
 ### 내 프로필 업데이트 (비밀번호 포함)
 PATCH {{base}}/api/users/me
@@ -8,9 +9,21 @@ Authorization: Bearer {{accessToken}}
 Content-Type: application/json
 
 {
-  "currentPassword": "기존비밀번호",
-  "newPassword": "새비밀번호1234!"
+  "currentPassword": "user1234!",
+  "newPassword": "user1234@"
 }
+
+### 내 프로필 업데이트 (이미지 업로드만)
+PATCH {{base}}/api/users/me
+Authorization: Bearer {{accessToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="avatar.png"
+Content-Type: image/png
+
+< {{imagePath}}
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
 
 ### 비밀번호 변경
 PATCH {{base}}/api/users/password

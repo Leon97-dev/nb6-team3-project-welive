@@ -52,7 +52,7 @@ Content-Type: application/json
 
 {
   "username": "user_test_001",
-  "password": "user1234!"
+  "password": "user1234@"
 }
 
 ### 4) 토큰 재발급 (login 이후 쿠키 필요)
