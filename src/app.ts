@@ -18,6 +18,7 @@ import { optionalAuth } from './middlewares/auth';
 import healthRouter from './shared/health/health.route';
 import uploadRouter from './shared/upload/upload.route';
 import authRouter from './modules/auth/auth.route';
+import apartmentRouter from './modules/apartments/apartment.route';
 import userRouter from './modules/users/user.route';
 
 // ======================================
@@ -53,6 +54,7 @@ app.use('/api/upload', uploadRouter);
 
 // Domain Routes
 app.use('/api/auth', authRouter);
+app.use('/api/apartments', apartmentRouter);
 app.use('/api/users', userRouter);
 
 // ======================================
