@@ -18,14 +18,14 @@ const toText = (value: number): string => String(value);
 
 // 2) 동 범위 변환
 const toDongRange = (startDongNumber: number, endDongNumber: number) => ({
-  start: `${startDongNumber}01`,
-  end: `${endDongNumber}08`,
+  start: toText(startDongNumber),
+  end: toText(endDongNumber),
 });
 
 // 3) 호 범위 변환
-const toHoRange = (startDongNumber: number, endDongNumber: number) => ({
-  start: `${startDongNumber}01`,
-  end: `${endDongNumber}2508`,
+const toHoRange = (startHoNumber: number, endHoNumber: number) => ({
+  start: toText(startHoNumber),
+  end: toText(endHoNumber),
 });
 
 // 4) 아파트 응답 변환
@@ -126,7 +126,7 @@ export const apartmentService = {
         apartment.startDongNumber,
         apartment.endDongNumber
       ),
-      hoRange: toHoRange(apartment.startDongNumber, apartment.endDongNumber),
+      hoRange: toHoRange(apartment.startHoNumber, apartment.endHoNumber),
     };
   },
   // 4) 공개 아파트 ID로 조회
@@ -155,7 +155,7 @@ export const apartmentService = {
         apartment.startDongNumber,
         apartment.endDongNumber
       ),
-      hoRange: toHoRange(apartment.startDongNumber, apartment.endDongNumber),
+      hoRange: toHoRange(apartment.startHoNumber, apartment.endHoNumber),
     };
   },
 };

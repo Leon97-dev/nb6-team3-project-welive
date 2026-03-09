@@ -138,12 +138,12 @@ describe('apartmentService', () => {
       expect(result.apartmentStatus).toBe('PENDING');
       expect(result.adminEmail).toBe('admin@test.com');
       expect(result.dongRange).toEqual({
-        start: '10101',
-        end: '12008',
+        start: '101',
+        end: '120',
       });
       expect(result.hoRange).toEqual({
-        start: '10101',
-        end: '1202508',
+        start: '1',
+        end: '8',
       });
     });
 
@@ -187,12 +187,12 @@ describe('apartmentService', () => {
         startHoNumber: '1',
         endHoNumber: '8',
         dongRange: {
-          start: '10101',
-          end: '12008',
+          start: '101',
+          end: '120',
         },
         hoRange: {
-          start: '10101',
-          end: '1202508',
+          start: '1',
+          end: '8',
         },
       });
     });
